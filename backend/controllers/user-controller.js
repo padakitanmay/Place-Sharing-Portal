@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import HttpError from "../models/HttpError.js";
 import { User } from "../models/user-model.js";
-
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import fs from "fs";
 
 export const getUsers = async (req, res, next) => {
     let users;
@@ -46,16 +47,15 @@ export const signup = async (req, res, next) => {
     } catch (error) {
         return next(new HttpError("Could not create user", 500));
     }
-    // console.log(req);
-    // const cloudPath = await uploadOnCloudinary();
 
-    
+    const cloudPath = await uploadOnCloudinary(req.file.path);
 
-    let cloudPath = req.file.path;
+
+    // let cloudPath = req.file.path;
     const createdUser = new User({
         name,
         email,
-        image: cloudPath,
+        image: cloudPath.url,
         password: hashedPassword,
         places: [],
     });
@@ -83,6 +83,12 @@ export const signup = async (req, res, next) => {
                 500
             )
         );
+    }
+
+    if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+            console.log(err);
+        });
     }
 
     res.status(201).json({
@@ -121,7 +127,7 @@ export const login = async (req, res, next) => {
     }
 
     let token;
-    try { 
+    try {
         token = jwt.sign(
             { userId: existingUser.id, email: existingUser.email },
             process.env.JWT_SECRET_KEY,
@@ -150,7 +156,7 @@ export const deleteUser = async (req, res, next) => {
                 new HttpError("Could not find a user for the provided id.", 404)
             );
         }
-        
+
         await User.findByIdAndDelete(userId);
     } catch (error) {
         return next(

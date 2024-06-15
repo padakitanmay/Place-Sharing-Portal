@@ -11,7 +11,7 @@ const UsersItem = (props) => {
                 <Link to={`/${props.id}/places`}>
                     <div className='user-item__image'>
                         <Avatar
-                            image={`${process.env.REACT_APP_IMG_URL}/${props.image}`}
+                            image={props.image}
                             alt={props.name}
                             width={50}
                         />

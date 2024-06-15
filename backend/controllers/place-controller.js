@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { getCoordinates } from "../utils/location.js";
 import { Place } from "../models/place-model.js";
 import { User } from "../models/user-model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 export const getPlaceByID = async (req, res, next) => {
     const placeId = req.params.pid;
@@ -56,12 +57,14 @@ export const createPlace = async (req, res, next) => {
         return next(error);
     }
 
+    const cloudPath = await uploadOnCloudinary(req.file.path);
+    console.log(cloudPath);
     const createdPlace = new Place({
         title,
         description,
         location: coordinates,
         address,
-        image: req.file.path,
+        image: cloudPath.url,
         creator: req.userData.userId,
     });
 
@@ -89,6 +92,13 @@ export const createPlace = async (req, res, next) => {
         const error = new HttpError("failed to create place", 500);
         return next(error);
     }
+
+    if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+            console.log(err);
+        });
+    }
+
     res.status(201).json({ place: createdPlace });
 };
 
