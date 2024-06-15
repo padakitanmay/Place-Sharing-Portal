@@ -19,6 +19,7 @@ export const getUsers = async (req, res, next) => {
 export const signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        console.log("Validation errors:", errors.array());
         return next(
             new HttpError("Invalid inputs passed, please check your data.", 422)
         );
@@ -30,6 +31,7 @@ export const signup = async (req, res, next) => {
     try {
         existingUser = await User.findOne({ email: email });
     } catch (err) {
+        console.log("Error finding user:", err);
         return next(
             new HttpError("Signing up failed, please try again later.", 500)
         );
@@ -44,14 +46,21 @@ export const signup = async (req, res, next) => {
     let hashedPassword;
     try {
         hashedPassword = await bcrypt.hash(password, 12);
-    } catch (error) {
+    } catch (err) {
+        console.log("Error hashing password:", err);
         return next(new HttpError("Could not create user", 500));
     }
 
-    const cloudPath = await uploadOnCloudinary(req.file.path);
+    let cloudPath;
+    try {
+        cloudPath = await uploadOnCloudinary(req.file.path);
+    } catch (err) {
+        console.log("Error uploading to Cloudinary:", err);
+        return next(
+            new HttpError("Image upload failed, please try again later.", 500)
+        );
+    }
 
-
-    // let cloudPath = req.file.path;
     const createdUser = new User({
         name,
         email,
@@ -63,6 +72,7 @@ export const signup = async (req, res, next) => {
     try {
         await createdUser.save();
     } catch (err) {
+        console.log("Error saving user:", err);
         return next(
             new HttpError("Signing up failed, please try again later.", 500)
         );
@@ -75,8 +85,8 @@ export const signup = async (req, res, next) => {
             process.env.JWT_SECRET_KEY,
             { expiresIn: "1h" }
         );
-    } catch (error) {
-        console.log(error.message);
+    } catch (err) {
+        console.log("Error generating token:", err);
         return next(
             new HttpError(
                 "Signing up failed, please try again later token failed.",
@@ -87,7 +97,9 @@ export const signup = async (req, res, next) => {
 
     if (req.file) {
         fs.unlink(req.file.path, (err) => {
-            console.log(err);
+            if (err) {
+                console.log("Error deleting file:", err);
+            }
         });
     }
 
