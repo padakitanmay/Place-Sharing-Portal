@@ -9,9 +9,10 @@ import userRoutes from "./routes/user-routes.js";
 import HttpError from "./models/HttpError.js";
 import { connectDB } from "./database/db.js";
 
-
 const app = express();
-app.use("*",(req, res, next) => {
+app.use(bodyParser.json({ limit: "50mb" })); // for JSON requests
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true })); // for URL-encoded requests
+app.use("*", (req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
         "Access-Control-Allow-Headers",
@@ -20,7 +21,6 @@ app.use("*",(req, res, next) => {
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE");
     next();
 });
-app.use(bodyParser.json());
 
 app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
