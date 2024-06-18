@@ -11,11 +11,6 @@ import { connectDB } from "./database/db.js";
 
 
 const app = express();
-
-app.use(bodyParser.json());
-
-app.use("/uploads/images", express.static(path.join("uploads", "images")));
-
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
@@ -25,6 +20,9 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE");
     next();
 });
+app.use(bodyParser.json());
+
+app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
 app.use("/api/places", placeRoutes);
 app.use("/api/users", userRoutes);
