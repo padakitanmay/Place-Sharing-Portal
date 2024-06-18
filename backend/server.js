@@ -11,7 +11,7 @@ import { connectDB } from "./database/db.js";
 
 
 const app = express();
-app.use((req, res, next) => {
+app.use("*",(req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
         "Access-Control-Allow-Headers",
