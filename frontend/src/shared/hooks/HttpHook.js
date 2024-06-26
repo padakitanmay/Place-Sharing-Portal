@@ -32,7 +32,7 @@ export const useHttpClient = () => {
                 setIsLoading(false);
                 return responseData;
             } catch (error) {
-                setError(error.message);
+                setError("Http error " + error.message);
                 setIsLoading(false);
                 throw error;
             }
